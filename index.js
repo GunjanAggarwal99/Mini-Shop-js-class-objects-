@@ -23,9 +23,14 @@ class ElementAttribute {
   }
 }
 class Component {
-  constructor(renderHookId) {
+  constructor(renderHookId, shouldRender = true) {
     this.hookId = renderHookId;
+    if (shouldRender) {
+      this.rendor();
+    }
   }
+
+  rendor() {}
 
   createRootElement(tag, cssClass, attribute) {
     const rootEl = document.createElement(tag);
@@ -66,12 +71,19 @@ class ShoppingCard extends Component {
     this.cardItem = updateItem;
   }
 
+  orderPRoduct() {
+    console.log('Odering....');
+    console.log(this.item);
+  }
+
   rendor() {
     const cardEl = this.createRootElement('section', 'cart');
     cardEl.innerHTML = `
      <h2>Total: \$${0}</h2>
      <button>Order Now!</button>
     `;
+    const orderNowBtn = cardEl.querySelector('button');
+    orderNowBtn.addEventListener('click', () => this.orderPRoduct());
     this.totalOutput = cardEl.querySelector('h2');
     // return cardEl;
   }
@@ -79,8 +91,9 @@ class ShoppingCard extends Component {
 
 class ProductItem extends Component {
   constructor(product, renderHookId) {
-    super(renderHookId); // call first as its component constructor
+    super(renderHookId, false); // call first as its component constructor
     this.product = product;
+    this.rendor();
   }
 
   addToCart() {
@@ -108,23 +121,35 @@ class ProductItem extends Component {
 }
 
 class ProductList extends Component {
-  products = [
-    new Product(
-      'Echo Dot (3rd Gen)',
-      'https://m.media-amazon.com/images/I/61IfOpQwIEL._SX522_.jpg',
-      'Alexa smart speaker with loud 360 degree sound & Bluetooth',
-      2499
-    ),
-    new Product(
-      'Noise Pulse Go Buzz Bluetooth Calling Smart Watch',
-      'https://m.media-amazon.com/images/I/61wJNP17lEL._SX425_.jpg',
-      '1.69" Clear Display, 550Nits,150+ Watch face, Comfort Strap, Heart Rate, Steps & Sleep Tracker, IP68, 7 Days Battery(Rose Pink)',
-      1699
-    ),
-  ];
+  products = [];
 
   constructor(renderHookId) {
     super(renderHookId);
+    this.fetchProduct();
+  }
+
+  fetchProduct() {
+    this.products = [
+      new Product(
+        'Echo Dot (3rd Gen)',
+        'https://m.media-amazon.com/images/I/61IfOpQwIEL._SX522_.jpg',
+        'Alexa smart speaker with loud 360 degree sound & Bluetooth',
+        2499
+      ),
+      new Product(
+        'Noise Pulse Go Buzz Bluetooth Calling Smart Watch',
+        'https://m.media-amazon.com/images/I/61wJNP17lEL._SX425_.jpg',
+        '1.69" Clear Display, 550Nits,150+ Watch face, Comfort Strap, Heart Rate, Steps & Sleep Tracker, IP68, 7 Days Battery(Rose Pink)',
+        1699
+      ),
+    ];
+    this.rendorProduct();
+  }
+
+  rendorProduct() {
+    for (const prod of this.products) {
+      new ProductItem(prod, 'prod-list');
+    }
   }
 
   rendor() {
@@ -132,27 +157,34 @@ class ProductList extends Component {
     this.createRootElement('ul', 'product-list', [
       new ElementAttribute('id', 'prod-list'),
     ]);
-    // prodList.className = 'product-list';
-    for (const prod of this.products) {
-      const productItem = new ProductItem(prod, 'prod-list');
-      productItem.rendor();
-      // const prodEl = productItem.rendor();
-      // prodList.append(prodEl);
+    if (this.products && this.products.length > 0) {
+      this.rendorProduct();
     }
+    // prodList.className = 'product-list';
+    // for (const prod of this.products) {
+    //   new ProductItem(prod, 'prod-list');
+    //   // const productItem = new ProductItem(prod, 'prod-list');
+    //   // productItem.rendor();
+    //   // const prodEl = productItem.rendor();
+    //   // prodList.append(prodEl);
+    // }
     // return prodList;
   }
 }
 
 class MiniShopApp {
+  constructor() {
+    this.rendor();
+  }
   rendor() {
     // const rendrHook = document.getElementById('app');
 
     this.cart = new ShoppingCard('app');
-    this.cart.rendor();
+    // this.cart.rendor();
     // const shoppingCardEl = this.cart.rendor();
-
-    const productList = new ProductList('app');
-    productList.rendor();
+    new ProductList('app');
+    // const productList = new ProductList('app');
+    // productList.rendor();
     // const productListEl = productList.rendor();
 
     // rendrHook.append(shoppingCardEl);
@@ -164,7 +196,7 @@ class App {
   static cart;
   static init() {
     const shop = new MiniShopApp();
-    shop.rendor();
+    // shop.rendor();
     this.cart = shop.cart;
   }
   static addProductToCart(product) {
