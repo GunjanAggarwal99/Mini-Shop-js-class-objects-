@@ -19,10 +19,24 @@ class Product {
 
 class ShoppingCard {
   item = [];
+  set cardItem(value) {
+    this.item = value;
+    this.totalOutput.innerHTML = `<h2>Total: \$${this.totalAmount.toFixed(
+      2
+    )}</h2>`;
+  }
+
+  get totalAmount() {
+    const sum = this.item.reduce((prev, curr) => {
+      return prev + curr.price;
+    }, 0);
+    return sum;
+  }
 
   addProduct(product) {
-    this.items.push(product);
-    this.totalOutput = `<h2>Total: \$${1}</h2>`;
+    const updateItem = [...this.item];
+    updateItem.push(product);
+    this.cardItem = updateItem;
   }
 
   rendor() {
@@ -32,6 +46,7 @@ class ShoppingCard {
      <button>Order Now!</button>
     `;
     cardEl.className = 'cart';
+    this.totalOutput = cardEl.querySelector('h2');
     return cardEl;
   }
 }
@@ -42,7 +57,7 @@ class ProductItem {
   }
 
   addToCart() {
-    console.log(this.product);
+    App.addProductToCart(this.product);
   }
 
   rendor() {
@@ -99,8 +114,8 @@ class MiniShopApp {
   rendor() {
     const rendrHook = document.getElementById('app');
 
-    const shoppingCard = new ShoppingCard();
-    const shoppingCardEl = shoppingCard.rendor();
+    this.cart = new ShoppingCard();
+    const shoppingCardEl = this.cart.rendor();
 
     const productList = new ProductList();
     const productListEl = productList.rendor();
@@ -111,9 +126,14 @@ class MiniShopApp {
 }
 
 class App {
+  static cart;
   static init() {
     const shop = new MiniShopApp();
     shop.rendor();
+    this.cart = shop.cart;
+  }
+  static addProductToCart(product) {
+    this.cart.addProduct(product);
   }
 }
 
