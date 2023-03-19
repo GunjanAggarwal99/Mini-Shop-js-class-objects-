@@ -16,8 +16,35 @@ class Product {
     this.price = price;
   }
 }
+class ElementAttribute {
+  constructor(attributeName, attributeValue) {
+    this.name = attributeName;
+    this.value = attributeValue;
+  }
+}
+class Component {
+  constructor(renderHookId) {
+    this.hookId = renderHookId;
+  }
 
-class ShoppingCard {
+  createRootElement(tag, cssClass, attribute) {
+    const rootEl = document.createElement(tag);
+    if (cssClass) {
+      rootEl.className = cssClass;
+    }
+    if (attribute && attribute.length > 0) {
+      for (const arr of attribute) {
+        rootEl.setAttribute(arr.name, arr.value);
+      }
+    }
+    document.getElementById(this.hookId).append(rootEl);
+    return rootEl;
+  }
+}
+class ShoppingCard extends Component {
+  constructor(renderHookId) {
+    super(renderHookId);
+  }
   item = [];
   set cardItem(value) {
     this.item = value;
@@ -40,19 +67,19 @@ class ShoppingCard {
   }
 
   rendor() {
-    const cardEl = document.createElement('section');
+    const cardEl = this.createRootElement('section', 'cart');
     cardEl.innerHTML = `
      <h2>Total: \$${0}</h2>
      <button>Order Now!</button>
     `;
-    cardEl.className = 'cart';
     this.totalOutput = cardEl.querySelector('h2');
-    return cardEl;
+    // return cardEl;
   }
 }
 
-class ProductItem {
-  constructor(product) {
+class ProductItem extends Component {
+  constructor(product, renderHookId) {
+    super(renderHookId); // call first as its component constructor
     this.product = product;
   }
 
@@ -61,8 +88,8 @@ class ProductItem {
   }
 
   rendor() {
-    const prodEl = document.createElement('li');
-    prodEl.className = 'product-item';
+    const prodEl = this.createRootElement('li', 'product-item');
+    // prodEl.className = 'product-item';
     prodEl.innerHTML = `
        <div>
        <img src='${this.product.imageUrl}' alt='${this.product.title}'>
@@ -76,11 +103,11 @@ class ProductItem {
       `;
     const AddCartBtn = prodEl.querySelector('button');
     AddCartBtn.addEventListener('click', this.addToCart.bind(this));
-    return prodEl;
+    // return prodEl;
   }
 }
 
-class ProductList {
+class ProductList extends Component {
   products = [
     new Product(
       'Echo Dot (3rd Gen)',
@@ -96,32 +123,40 @@ class ProductList {
     ),
   ];
 
-  constructor() {}
+  constructor(renderHookId) {
+    super(renderHookId);
+  }
 
   rendor() {
-    const prodList = document.createElement('ul');
-    prodList.className = 'product-list';
+    // const prodList = document.createElement('ul');
+    this.createRootElement('ul', 'product-list', [
+      new ElementAttribute('id', 'prod-list'),
+    ]);
+    // prodList.className = 'product-list';
     for (const prod of this.products) {
-      const productItem = new ProductItem(prod);
-      const prodEl = productItem.rendor();
-      prodList.append(prodEl);
+      const productItem = new ProductItem(prod, 'prod-list');
+      productItem.rendor();
+      // const prodEl = productItem.rendor();
+      // prodList.append(prodEl);
     }
-    return prodList;
+    // return prodList;
   }
 }
 
 class MiniShopApp {
   rendor() {
-    const rendrHook = document.getElementById('app');
+    // const rendrHook = document.getElementById('app');
 
-    this.cart = new ShoppingCard();
-    const shoppingCardEl = this.cart.rendor();
+    this.cart = new ShoppingCard('app');
+    this.cart.rendor();
+    // const shoppingCardEl = this.cart.rendor();
 
-    const productList = new ProductList();
-    const productListEl = productList.rendor();
+    const productList = new ProductList('app');
+    productList.rendor();
+    // const productListEl = productList.rendor();
 
-    rendrHook.append(shoppingCardEl);
-    rendrHook.append(productListEl);
+    // rendrHook.append(shoppingCardEl);
+    // rendrHook.append(productListEl);
   }
 }
 
